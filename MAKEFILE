@@ -5,7 +5,7 @@ ARCH = amd64        # or arm64
 ZIP_FILE = function.zip
 BINARY = bootstrap
 REGION = sa-east-1  # change to your region
-ROLE_ARN = arn:aws:iam::311148461019:role/service-role/LambdaExecutionRole
+ROLE_ARN = arn:aws:iam::
 
 # 🧹 Cleanup build artifacts
 clean:
