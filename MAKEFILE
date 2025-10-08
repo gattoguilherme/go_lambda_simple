@@ -1,0 +1,41 @@
+# 🏗️ Variables
+APP_NAME = go-hello-lambda
+FUNCTION_NAME = go-hello-lambda
+ARCH = amd64        # or arm64
+ZIP_FILE = function.zip
+BINARY = bootstrap
+REGION = sa-east-1  # change to your region
+ROLE_ARN = arn:aws:iam::311148461019:role/service-role/LambdaExecutionRole
+
+# 🧹 Cleanup build artifacts
+clean:
+	rm -f $(BINARY) $(ZIP_FILE)
+
+# ⚙️ Build binary for AWS Lambda (Amazon Linux 2)
+build:
+	GOOS=linux GOARCH=$(ARCH) CGO_ENABLED=0 go build -o $(BINARY) main.go
+	file $(BINARY)
+
+# 📦 Package for Lambda
+package: clean build
+	zip $(ZIP_FILE) $(BINARY)
+	@echo "✅ Packaged $(ZIP_FILE)"
+
+# ☁️ Create Lambda (run only once)
+create:
+	aws lambda create-function \
+	  --function-name $(FUNCTION_NAME) \
+	  --runtime provided.al2 \
+	  --role $(ROLE_ARN) \
+	  --handler $(BINARY) \
+	  --zip-file fileb://$(ZIP_FILE) \
+	  --architectures $(ARCH) \
+	  --region $(REGION)
+
+# 🔄 Update code in existing Lambda
+deploy: package
+	aws lambda update-function-code \
+	  --function-name $(FUNCTION_NAME) \
+	  --zip-file fileb://$(ZIP_FILE) \
+	  --region $(REGION)
+	@echo "🚀 Deployed to Lambda: $(FUNCTION_NAME)"
